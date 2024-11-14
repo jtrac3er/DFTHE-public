@@ -1,0 +1,159 @@
+Ganz simple Idee eigentlich:
+
+Man nimmt komplexe Zahlen, um die Kompontenten von 2 komplexen Zahlen zu speichern
+
+Schlechte Idee, ist genau dasselbe wie C2
+
+Und was ist, wenn ich das ganze mit einer Fourier Transformation kombiniere?
+
+Also 2 verschiedene Vektoren
+
+Also ich habe diese beiden Vektoren, welche ich mit Faltung multiplizieren kann
+
+	A  			B
+
+	a1			b1
+	a2 			b2
+	      ..
+	an			bn
+
+
+Diese repräsentieren dann n Komplexe Zahlen, bzw. deren Koeffizienten
+
+Also das scheint mir diesmal wirklich sicher zu sein, ein versuchter Beweis sieht so aus:
+
+ a) Man kann unmöglich die Koeffizienten a1,..,an berechnen, da man hier keine Annahmen machen
+    kann, was deren Wert ist. Und die DFT ist auch nicht brechbar
+
+ b) Man kann das ganze aber invertieren wie immer, das ist nicht so eine Sache. Das ist auch
+    gar kein Problem. Natürlich ergibt sich daraus auch ein Nulltest. Aber ich sage, solange
+    man nichts leakt ist es kein Problem. Das nicht leaken erreicht man durch spezielles encoding
+    wie immer 
+      - ich sage man kann nichts leaken, weil man mit ganzen Zahlen arbeitet und somit leakt 
+        man ganz sicher nicht das z/z' encoding, kann man gar nicht. Der einzige Grund wieso 
+        man das LGS nicht lösen kann ist eine Null, welche sicher nicht von a^2 + b^2 kommt
+        und somit ist das z/z' encoding sicher würde ich sagen
+
+ c) das einzige wo ich das gefühl habe könnte etwas leaken, ist Z = A*A + B*B, wobei * hier 
+    die Faltung bezeichnet. Weil es gilt, dass wenn m=0 ist, dass Z = Nullvektor (0') ist. 
+    Ich weiss nicht ob dadurch a^2 + b^2 = 0 geleakt wird
+
+a0*a0 + a1*a2 + a2*a1 = A0
+a0*a1 + a1*a0 + a2*a2 = A1
+a0*a2 + a1*a1 + a2*a0 = A2
+
+b0*b0 + b1*b2 + b2*b1 = B0
+b0*b1 + b1*b0 + b2*b2 = B1
+b0*b2 + b1*b1 + b2*b0 = B2
+
+Basisvektor vergleich, Primzahl ist 25261 und a=12631, b=1543, u=16700
+
+A: [21051, 19624, 9847]
+B: [17355, 9047, 24120]
+
+A: [21051, 9847, 19624]
+B: [7906, 1141, 16214]
+
+A: [21051, 19624, 9847]
+B: [7906, 16214, 1141]
+
+A: [21051, 9847, 19624]
+B: [17355, 24120, 9047]
+
+Also man sieht folgendes: Es gibt sehr viele gleiche Werte wieder einmal,
+aber im Unterschied zu einem C2 Encoding gilt, dass die Werte nicht ablesbar 
+sind. ich meine, bei C2 Encoding gab es gewisse Variablen deren Wert man 
+wusste, aber hier ist das nicht so, jeder Wert ist unbekannt. Man weiss zwar,
+welche Werte gleich sind, aber man kennt deren wert nicht. 
+
+Aber ein entscheidendes Problem tritt auch hier wieder auf: Und zwar, dass bei den Basisvektoren b2 und b3
+folgende Probleme auftreten
+
+A: [a, x, y]
+B: [b, j, k]
+
+A: [a, y, x]
+B: [-b, -k, -j]
+
+
+Und das führt dann dazu dass man r1 und r2 bestimmen kann denke ich, denn man kennt
+
+r1^n * x + r2^n * x
+r1^n * y + r2^n * -y
+
+  =
+
+x * (r1^n + r2^n)
+y * (r1^n - r2^n)
+
+Vielleicht hilft das jedoch auch, weil x und y diesmal verschieden sind. Vorallem bringt es denke ich nichts,
+wenn man (r1^n + r2^n) kennt, weil das ist nicht dasselbe wie (r1 + r2)^n. 
+
+r1^n * a + r2^n * b
+r1^n * b + r2^n * a
+
+(r1^n - r2^n) * a + (r2^n - r1^n) * b
+
+
+Oder sonst könnte man überprüfen, ob eine Nullstelle in der DFT wirklich zu deren Lösung beiträgt, und ob man 
+es vielleicht verhindern kann, wenn man einen Nullspace schafft, der gross genug ist. Das könnte auch noch
+helfen, das ganze sicher zu machen, wenn es das noch nicht ist
+
+
+Also auf jeden Fall sehe ich hier potential für ein neues Programm, welches Formale Verifikation macht. Denn
+ich sehe schon, es ist unmöglich, diese Scheiss DFT Algorithmen zu beweisen, und zwar einfach aus dem Grund,
+dass man unendlich viele Gleichungen aufstellen kann. Es bräuchte ein Tool dazu, wie bei Protokollen, wo man
+zum Beispiel eingeben kann
+
+ - Man hat 
+ 	r1*b2 und r2*b3
+ 	  r1,r2 beliebig
+ 	  b2,b3 beliebig (aber fixiert durch bedingung)
+
+ - Es gilt
+    mul(bi,bi) = 0 wenn i!=j sonst bi
+
+ - Aufgabe
+ 	  finde r1 und r2
+
+Und dann kann man quasi die rechenregeln eingeben für mul() und für skalarmultiplikation. Mit normaler Addition
+und Multiplikation soll das Tool dann versuchen, r1 und r2 herzuleiten. So könnte man es alles testen lassen 
+bis zu einem bestimmten Grad und eine Intuition bekommen, wieso es geht oder nicht
+
+Also es gibt anscheinend schon solch ein Programm: Z3 SMT-Solver von Microsoft
+
+So könnte man nach den unbekannten Variablen lösen, die Constraints garantieren die eindeutigkeit. Wsl müsste
+man jedoch ein Modulus angeben, welcher funktioniert. 
+
+
+==== Nein, man kann das Problem nicht lösen. Beweis ====
+
+Angenommen, a,b,x,y,j,k sind zufällig und nicht miteinander in einer Beziehung zueinander. Wenn man dann r1 und 
+r2 herauskriegen würde, dann könnte man auch das z/z' encoding brechen. Um das z/z' encoding einer Zahl z zu brechen
+kann man einfach 
+ 
+ z | ...
+
+berechnen und dann diesen Vektor versuchen aufzubrechen. Denn (a,b) und (a,-b) in der ersten Spalte würde genau
+diesem Encoding entsprechen. Also wenn man r1 und r2 findet, dann bricht man dadurch das z/z' encoding, und zwar
+indem man dann r1 auf Null setzen kann: c*c - r1*c wird eine Nullstelle sein. Und somit kann man die Wurzel aus 
+-1 berechnen, was man eigentlich nicht tun können sollte. Also daher geht das nicht. 
+
+========================================================
+
+
+Etwas anderes, was auch noch ist, wäre dass man im Falle von m=0 den B Vektor durch den A Vektor teilen kann
+Also A = K * B, wobei K dann die Verhältnisse des reellen Teils zum imaginären Teil zeigt, welcher im Falle
+|z| = 0 immer konstant ist. Das heisst, dadurch würde man den Imaginären Teil leaken, aber ich behaupte, das
+geht nicht, denn 
+
+  K
+
+  0
+  t
+  -t
+
+Wäre dann die Lösung, wobei gilt, dass ((p+1)/2) * t = b, sodass ((p+1)/2)^2 + t^2 = 0 ergeben, also eine
+Nullstelle, die es zu beschützen gilt. Aber ich behaupte, das ist auch sicher, im Sinne von man kann t
+nicht aus K extrahieren. Man kann jedoch t^2 extrahieren, denn K*K würde dann t^2 ergeben und so weiter,
+aber man kann ja keine Wurzeln ziehen.

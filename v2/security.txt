@@ -1,0 +1,74 @@
+Also: Auch hier wieder dasselbe Problem, man kann es mit einem LGS lösen. 
+Doch ich habe mich mal gefragt, ob das überhaupt stimmt, also kann man ein 
+LGS lösen, wenn man den Modulo nicht kennt? Ich habe immer gedacht das geht, aber
+vielleicht geht das doch nicht..
+
+Die Sache ist, wenn man ein LGS lösen will mit Modulo, dann löst man basically 2
+LGS gleichzeitig auf. Ich habe mich gefragt was passiert, wenn das eine LGS keine
+Lösung besitzt. Dann führt das doch dazu, dass das andere LGS auch keine Lösung 
+enthält..
+
+M = P + Q
+
+Wenn man dann quasi Mx=b löst, dann löst man 2 LGS auf einmal
+
+P x = i
+Q y = j
+
+Das Ding ist halt, wenn man nur eine der beiden Variablen kennt, dann kann man den
+Rest doch gar nicht lösen, oder etwa schon? Versucht man, 
+
+M x = i 
+
+zu lösen, dann löst man basically folgendes
+
+P x = i
+Q y = i
+
+Was ist nun, wenn Q y = i keine Lösung besitzt? Ich denke, dann kann man M x = i
+auch nicht lösen, weil man MUSS beide GLEICHZEITIG lösen, aber das lässt sich nicht lösen
+
+ -> aber dann hat man auch das Problem, dass die einzige Möglichkeit die es gibt, sodass
+    es unlösbar wird wsl ist, dass man durch 0 teilen muss. Wenn man aber eine 0 leakt, dann
+    kann man die PFZ kriegen. Also noch schlimmer, man löst sogar die PFZ
+
+ -> Im Komplexen könnte es aber dennoch sicher sein, weil man dann höchstens einen Null-Vektor
+    leakt. Wenn man den sowieso nicht braucht, dann ist doch egal. 
+      ==> führt ein leak im Null-Vektor dazu, dass man die PFZ kriegen kann? Vielleicht eben schon
+          also ChatGPT denkt schon. 
+
+
+Konkrete Idee: Längen Encoding für m, und dann [r,r,r,r] encodet als Checksum. Das führt dann dazu, dass
+Der checksum teil sicherlich keinen vollen Rank hat und wenn man p,q nicht kennt, dass man dann
+auch nie eine Lösung findet per LGS
+
+ c := [m0*g^0, m1*g^1, ..., mn*g^n] * p1_q0   +   [r*g^0, r*g^1, ..., r*g^n] * p0_q1
+
+Weil das führt dann dazu, dass der checksum part immer linear abhängig ist von sich und somit genau eine
+einzige Lösung hat, und zwar r, aber nur r 
+
+ [r*g^0, r*g^1, ..., r*g^n]  FALTUNG  HOCH 2
+ =
+ [r^2*g^0, r^2*g^1, ..., r^2*g^n]  =  k * r * [r*g^0, r*g^1, ..., r*g^n]
+
+Ist also linear abhängig. Somit wäre der Cheksum teil nie lösbar. Aber eben, dafür müsste man sich in 
+einem Komplexen Setting befinden, weil sonst droht man, die PFZ zu leaken. Das könnte sogar noch
+funktionieren. NEIN tut es nicht. Auch dann leakt man die PFZ. 
+
+ - Die einzige Möglichkeit, wie man das LGS nicht lösen kann wäre dann, wenn man kein multiplikatives
+   Inverses zu einer Komplexen Zahl finden kann, und das ist nur der Fall, wenn die Länge 0 ist oder 
+   im Falle von N=pq nicht in dieser Gruppe drin ist. Aber das würde dann heissen, dass man die PFZ 
+   leakt
+
+Also auch im Komplexen Falle: Entweder findet man ein einem modularen LGS eine Lösung, oder man findet 
+keine/mehrere und leakt dafür die PFZ. Das trifft ebenso auf komplexe Zahlen zu. Also langsam denke ich,
+dass es unmöglich ist mit linearität das zu lösen. 
+
+
+
+!!!!!! Linearität und Modulo-Operationen erschaffen beim besten Willen keine FHE !!!!!
+
+
+
+Nicht lineare Lösung basierend auf z,z' könnte möglich sein. Grobe Idee: Nimm z,z' um zwei
+reelle Zahlen zu encoden und anschliessend DFT

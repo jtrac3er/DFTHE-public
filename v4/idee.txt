@@ -1,0 +1,43 @@
+Also es wird immer abgefuckter. Nachdem das mit Quaternionen auch nicht funktioniert, auf dessen
+Beweis ich nun verzichten werde, habe ich nun eine neue Idee, die noch viel verrückter aussieht
+
+Und zwar nenne ich die neue Kreation, die die Welt der Mathematik noch nicht gesehen hat:
+  
+  Komplexe Zahlen in einer Komplexen Zahl (kurz: C2)
+
+Die Idee ist recht simpel: Eine C2 Zahl x wird definiert als x = ((a1,a2), (b1,b2))
+
+Da komplexe Zahlen alle axiome eines Ringes erfüllen, sollten auch C2 zahlen alle diese
+Axiome erfüllen. Zudem, im gegensatz zu Quaternionen sind C2 kommutativ und erfüllen ebenfalls
+alle Axiome eines Ringes. 
+
+-> Wobei, da bin ich mir doch nicht so sicher. Also kommutativ und assoziativ definitv,
+   aber bei der Distributivität bin ich mir noch nicht so sicher, sollte aber eigentlich
+   auch der Fall sein
+
+1' = ((1,0),(0,0))
+0' = ((0,0),(0,0))
+
+Was soll diese Zahlen so besonders machen?
+
+ - Es sollte theoretisch auch hier möglich sein, auch hier ein z/z' encoding zu machen. 
+
+    z * z' = 0'
+    z + z' = 1'
+    z ^ 2  = z
+    z'^ 2  = z'
+
+   Daraus folgt, dass |z| = |z'| = (0,0) ist. Man muss aber darauf achten, dass der Betrag 
+   einer solchen Zahl komplex ist.
+
+   Eine Eigenschaft die ich vermute ist, dass es mehrere Möglichkeiten gibt, wie man z/z'
+   wählt. 
+
+ - Es sollte auch eine Fourier-Transformation möglich sein, wegen der Eigenschaften
+
+
+Durch die Kombination meherer Möglichkeiten für das z/z' Encoding und durch die Möglichkeit
+der Fourier-Transformation sollte diese auch sicher gemacht werden. Durch mehrere Möglichkeiten
+kann man auf die PFZ verzichten. Zudem wird die FT unlösbar, wenn man den ursprung nicht genau
+kennt. Daher 
+

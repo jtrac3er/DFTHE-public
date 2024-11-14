@@ -1,0 +1,66 @@
+Mit C2 könnte man vielleicht doch noch mehr erreichen als gedacht
+
+Wobei vielleicht könnte man die Idee von nicht-PFZ-leakende Komplexe Zahlen auch auf nicht leakende C2 erweitern.
+Also sodass quasi immer, wenn es kein Inverses Element gibt, dass dann der Betrag der C2 Zahl = (0,0) ist. so würde
+man auch z/z' nicht leaken und schon gar nicht die PFZ...
+
+Wenn man es logisch erweitern würde würd edas heissen, dass die Verschlüsselung folgnedermassen aufgebaut ist:
+
+ [r1,r2,m,m] --> C2
+
+In diesem Falle könnte es sein, dass [r1,r2,0,0] immer den Betrag (0,0) hat. Und es sollte unmöglich sein, dass
+diese beiden m's einen anderen Wert haben
+
+angenonmmen x=p+1//2 und y=sqrt(-x^2). Dann wäre die Formel für die C2 Basisvektoren
+
+ (x,0,y,0)   --> (x,y)  --> (xx,xy,xy,yy)
+ 			 --> (x,-y) --> (xx,-xy,xy,-yy)
+ (x,0,-y,0)  --> (x,y)  --> (xx,xy,-xy,-yy)
+ 			 --> (x,-y) --> (xx,-xy,-xy,yy)
+
+also dies wären dann die Basisvektoren. Wenn man b[0],b[1] oder b[2],b[3] zusammennimmt, dann erhält man 
+
+  (x,0,y,0) oder (x,0,-y,0)
+
+Also so würde man dann verschlüsseln. 
+
+So wären Nullstellen sicher, denn eben, wenn m=0, dann gäbe es kein Inverses Element mehr weil |c| = (0,0)
+und das leakt weder die PFZ noch das z/z' encoding. Aber stimmt das auch? JA!
+
+
+Aber jetzt kommt noch eine weitere Frage: Wenn man eine m=0 Nullstelle kennt, kann man dann wirklich nicht die
+Basisvektoren berechnen oder x/y?
+
+Also angenommen man hat eine Nullstelle, dann kann man versuchen, folgendes LGS zu lösen:
+
+r1 * b[2] + r2 * b[3] = c
+
+Das kann man aber nicht, weil man r1,r2 nicht kennt. Also ich denke das geht nicht auf diese Art. 
+
+Doch leider schon. Und zwar wegen den xy Termen kann man es herausfinden:
+ 
+ r1 * (xx,-xy,-xy,yy)  +  r2 * (xx,xy,-xy,-yy)
+
+Dann hat man 
+
+ c = (?,i,j,?)
+
+und so hat man dann folgende Gleichungen:
+
+ r1*xy + r2*xy = i
+ r1*xy - r2*xy = j
+
+Aber das ist immer noch sicher, weil so findet man nur folgendes heraus:
+
+ r1*xy
+ r2*xy
+
+Aber von diesem Produkt kann man weder r1 noch r2 noch xy rekonstruieren. 
+ -> Falsch, einfach nicht direkt. Man kann den ciphertext c einfach quadrieren und dann
+    erhält man wieder eine solche Gleichung, mit welcher man dann folgendes herausfindet
+
+r1^2 * xy
+r2^2 * xy 
+
+und mit beiden Gleichungen kann man dann r1,r2 berechnen
+ 

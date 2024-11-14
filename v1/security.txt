@@ -1,0 +1,203 @@
+So wie es aussieht ist das ganze übelst unsicher, und zwar aus dem Grund, dass wenn man
+nur schon ein einzelnes Ciphertext-Plaintext Paar kennt, dass man dann die Unity Roots
+rekonstruieren kann und alles entschlüsseln. Dies geht auf folgende Art und Weise
+
+Man kennt (c, m), m!= 0
+
+Dann kann man c n mal potenzieren und dann ein LGS erstellen. Das Problem ist, dass wenn
+man c potenziert, dass diese dann linear unabhängig voneinander sind. Oder auch wenn man
+sonst mehrere Paare kennt, dann geht das auch schon. Dann bildet man das folgende LGS:
+
+		    A 		  x =    b
+
+| ---- c^1 ----|     | m^1 |
+| ---- c^2 ----| 	   | m^2 |
+| ---- ... ----| x = | ... |
+| ---- c^n ----|	   | m^n |
+
+Und dieses kann man dann nach x auflösen. Angenommen, m befindet sich an der i-ten Stelle
+im Encodeten Vektor, dann ist x nachder die i-te Spalte in der DFT Matrix. Und somit findet
+man dann die Unity Roots und kann die DFT Matrix rekonstruieren. 
+
+ - Kann man Inverse Elemente mod N finden, ohne dass man p,q kennt?
+    --> Ja das kann man eben mit dem erweiterten euklidschen Algorithmus
+         - Daher ist Gauss-Elimination möglich und man kann LGS lösen
+         - So kann man auch Komplexe Zahlen normieren und inverse finden
+    --> Nein kann man nicht!
+         - Man kann inverse elemente mod N berechnen, ohne p,q zu kennen
+           (https://crypto.stackexchange.com/questions/67199/inverse-of-an-element-in-a-rsa-group)
+         - Aber man kann keine Quadratwurzeln berechnen, ohne p,q zu kennen
+           (https://crypto.stackexchange.com/questions/72709/how-can-we-effectively
+               -compute-the-sqrt-of-some-element-in-the-group)
+
+
+Also nochmals etwas genauer: Für die Gauss-Elimination muss man teilen können. Ich sage aber,
+man kann nicht durch komplexe Zahlen teilen, ohne die Group order zu kennen, bzw. das finden
+einer inversen Komplexen zahl ist unmöglich
+
+ - Das inverse einer Zahl z = (a,b) hat einge geschlossene Formel:
+    z^-1 = sqrt(|z|)^-1 * (a, -b)
+  weil für diese Zahl gilt dann, dass
+    z^-1 * z = sqrt(|z|)^-1 * (a, -b) * (a, b)
+             = sqrt(|z|)^-1 * (a^2 + b^2, 0)
+
+mod 11:
+ (2,3) inverses ist (2,-3)*inv(2^2 + 3^2) = (2,-3)*inv(13=2) = (2,-3)*6 = (1,-7) = (1, 4)
+beweis:
+ (2,3) * (1,4) = (2*1 - 3*4, 3*1 + 2*4) = (1, 0)
+
+
+Falsch, man kann sehr wohl teilen. Man muss keine square root berechnen, man muss hierzu
+lediglich das inverse berechnen, das reicht schon. Und das kann man effizient. 
+
+
+
+         
+
+Einzige Lösung hierfür wäre, dass man die Message auf folgende Weise encodet:
+
+- [m, 0, m, ....]		Also abwechslungsweise nur m und 0
+
+Weil dann wären alle verschiedenen potenzen von c linear abhängig und man könnte keine
+Gauss-Elimination durchführen. Das würde dann auch dazu führen, dass c nur m Mal ein 
+Vektor wäre, aber halt ein Spezieller Vektor. Wäre das dann sicher?
+
+ - Also es würde Gauss-Elimination verhindern. Aber würde es auch verhindern, dass man
+   die Unity-Roots findet?
+ 
+ - Man könnte keine Checksums einbauen und es würde eine 1:1 korrespondenz zwischen 
+   ciphertext und Plaintext geben
+
+ - Es wäre unsicher, denn sobald man ein Paar kennt kann man schauen, welcher Faktor
+   dazwischen Steckt und dann weiss man alle anderen Elemente auch
+
+
+
+
+
+
+ist es realistisch, Zahlen so zu encoden, dass man niemals ihren genauen Wert kennt?
+Das ist das einzige, was die Gauss-Elimination verhindern würde..
+
+Idee: Man encodet den Wert nicht als (m,0) sondern als (a,b), wobei m = |(a,b)|. 
+Dann hat man aber das Problem, dass bei der Addition beide Zahlen dieselbe Phase
+haben müssen. Aber das kriegt man so hin
+
+ - Man wählt eine unity root uZ mit einem Grad n. 
+ - Man encodet die Messages als z = m*uZ
+ - Addition: 		z+z' = uZ + uZ'
+ - Mulitplikation:	z*z' = (uZ * zZ') * uK
+
+Nein geht nicht, denn uK, welches genommen würde um die Phase zu korrigieren, könnte
+auch direkt auf uZ angwandt werden und dann hätte man eine Zahl mit imaginär teil 0
+und diese würde dann die Länge direkt encoden. Geht nicht.  
+
+
+
+Ich frage mich, nach all den hoffnungslosen Versuchen, ist es überhaupt möglich, dass man 
+mithilfe von modularer Arithmetik ein FHE-Schema bauen kann, welches sicher ist? Weil
+alle meine Ideen haben sich als unsicher entpuppt und langsam denke ich, dass es vielleicht
+wirklich unmöglich ist. 
+ - Also Lineare Sachen funktionieren absolut nicht, da man immer Gauss anwenden kann
+ - Aber ich wüsste nicht, wie man einen Beweis über alle Algorithmen führen sollte
+
+
+
+
+
+
+Neue Idee: Anstatt Elemente in einem Vektor zu encoden, kann man vielleicht die Werte 
+ALS Vektor encoden:
+
+ m ==> m1 | m2 | m3
+
+Aber diesmal ist das encoding so gewählt, dass m = m1 + m2 + m3. Also man muss diese Vektoren
+addieren, sodass man deren Wert kriegt. Dabei gilt dann, dass man diese Werte falten muss,
+um sie zu multiplizieren, bzw dass man sie nach der FT element weise multiplizieren muss. 
+Dann gilt, dass man keinen dieser Werte kennt, da alle zufällig sind und daher kann man 
+kein LGS lösen. Aber vlt gibt es wieder andere Angriffe darauf
+
+ - Und wie es diese Angriffe gibt. Das ist noch viel unsicherer als zuerst angenommen.
+   Und zwar ist es so, dass wenn man diesen Vektor mit der DFT Matrix multipliziert, dass
+   c[0] = scale * (m1 + m2 + m3). Dies ist so, weil die oberste Reihe der DFT Matrix ja nur
+   aus (1,0) besteht. Es gibt hierbei also gar keine Verschlüsselung, sondern der wert wird
+   direkt exposed als c[0]
+
+
+
+
+
+Neue Idee: Es gibt ja spezielle Primzahlen, bei denen es spezielle Komplexe Paare z,z' gibt
+welche erfüllen, dass z+z' = (1,0) und z*z' = (0,0) ergeben. Man könnte doch diese nehmen und
+dann die Message encoden als
+ 
+ - m*z | ... | m*z'       m = m*z + m*z' = m(z+z') = m*(1,0)
+
+Denn um z,z' zu berechnen muss man meiner Meinung nach die PFZ kennen. Aber diese kennt man
+halt nicht, und daher schützen diese Werte die Message. Dies führt dann wiederum dazu, dass
+man das LGS nicht lösen kann, da man keine Einträge direkt kennt. Einziges Problem ergibt sich,
+wenn m = 0 ist, weil dann kennt man sehr wohl die Einträge, aber ich denke eben, das LGS lässt 
+sich nicht lösen, wenn man eine Nullstelle kennt, also
+
+  | ---- c^1 ----|     | 0 |
+  | ---- c^2 ----|     | 0 |
+  | ---- ... ----| x = | 0 |
+  | ---- c^n ----|     | 0 |
+
+lässt sich nicht so einfach lösen, um die Unity Roots zu berechnen. Das ding ist eben, dass 
+wenn man eine nicht triviale (also x' != 0) Lösung für das LGS kennt, dass man dann nicht
+die Unity Roots daraus berechnen kann, weil für x' gilt, dass k*x' ebenfalls eine Lösung
+für das LGS ist, und k kann eben auch eine Komplexe Zahl sein. Daher bringt es nicht viel
+und man kann mit einer solchen Lösung nichts anfangen. 
+
+Theorem: Es muss schwierig sein, einen Vektor mit Länge Null zu finden. Aber das ist es auch,
+denn dafür müsste man die Wurzel ziehen können, denn man muss die Gleichung 
+
+ a^2 + b^2 = 0          b = sqrt(N - a^2)
+
+Lösen können. Also für ein zufälliges a ist dies sicherlich schwer zu berechnen, aber ich weiss
+nicht, ob es vielleicht gewisse Werte a != 0 gibt, für die es einfach zu berechnen ist, aber ich
+denke mal nicht, vorallem wenn man die Faktorisierung von N nicht kennt. 
+
+Aber NEIN, nicht sicher! Ich habe die Falsche Annahme getroffen, dass es sicher sei, wenn man eine
+Nullstelle kennt im Plaintext, aber das ist es nicht. Auch eine Nullstelle leakt die Unity roots. 
+Denn es gilt, dass man den Nullspace durch Gauss berechnen kann. Die lösungsmenge ist dann
+  
+  - k*x'  =  [k*u^1, k*u^2, ..., k*u^n]
+
+Nun ist u = u^1 = k*u^2 / k*u^1  also kann man es einfach so berechnen, egal was k ist, es spielt
+gar keine Rolle. Einzige weitere Möglichkeit ist vielleicht, dass wenn man anstatt n Prim wählt, dass
+man n=2*3=6 wählt und dann m bei der Stelle m[0] und m[3] einsetzt. Weil dies sind die einzigen potenzen
+von unity roots, welche nicht alle anderen unity roots leaken würden. Aber das schützt auch nicht, denn
+man muss ja auch nicht alle roots kennen, nur ein paar reichen schon um einen teil des Ciphertextes
+zu decoden. 
+
+
+
+
+Noch eine Idee: Man nimmt z, z' um wieder ein längen-encoding zu machen, denn nur so kann man umgehen,
+dass in der nicht-encodeten Message Nullstellen auftreten. Checksums müssten dann mit modularer Arithmetik
+gemacht werden. Also man encodet als
+
+ c := z*[m1,m2,m3] + z'*[m2,m3,m1]    zum Beipsiel, einfach mit einem Shift
+
+Dadurch wird sicher auch die Länge nicht mehr direkt geleakt, oder das denke ich zumindest, wsl ist es
+aus irgendwelchen Gründen auch wieder unsicher oder irgend etwas anderes leakt diesmal
+
+
+
+
+Oder noch eine Idee: Scheiss auf FFT, man nimmt einfach nur z,z' um zu verschlüsseln, wenn diese ja so
+schwer zu finden sind. Also man nimmt die ursprüngliche Idee die ich hatte um zu verschlüsseln, einfach
+diesmal ohne dass man die PFZ kennt
+
+
+
+
+Oder noch eine Idee: Man längen encoding mit Generator multiplizieren, sodass Faltung invariant bleibt
+
+ c := [m0*g^0, m1*g^1,..., mn*g^n]    sodass m = m0 + m1 + ... + mn
+
+Dann kann man noch optional eine FFT anwenden, um die Multiplikation zu beschleunigen, weil Faltung
+hat eine komplexität von O(n^2) und pw-mul hat eine Komplexität von nur O(n). Das ist dann dasselbe, 
+wie wenn man eine FFT macht und danach dann noch z,z' anwendet. 

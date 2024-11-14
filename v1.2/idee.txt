@@ -1,0 +1,100 @@
+Also eigentlich keine neue Idee, aber mir ist eingefallen, dass eine alte Idee die ich hatte, doch
+nicht so unsicher war wie ich immer gedacht habe. Also der eine Kandidat hat mir immer schon sehr
+gefallen, und das war das simple und wirkungsvolle 
+
+ DFT + z/z'
+
+ich habe lange gedacht, das wäre unsicher, weil es die PFZ leakt. Aber das stimmt gar nicht unbedingt.
+Ich habe gemerkt, dass es die PFZ gar nicht leakt. Man muss die Zahl einfach bei beiden Modulos, p und q 
+nämlich einfach gleich setzen
+
+Vorher: Die beiden Modulos p und q seperat betrachten
+  
+  p 		q
+  ===========
+  0 0 	  0 0
+  a b	  c d
+  w x	  y z
+
+Nun: Man betrachtet pq nur zusammen als Produkt (a ist message, a < min(p,q))
+
+  N=pq
+  ====
+  0  0
+  a  r
+  r  c
+
+  p 		q
+  ===========
+  0 0 	  0 0
+  a r	  a R
+  r c	  R C
+
+  Also man kann es auch auseinander betrachten. Aber der Unterschied zu oben ist, dass man für p sowohl als
+  auch für q genau denselben wert für a und c nimmt. Also wenn einer der beiden 0 ergibt, dann ergibt der andere
+  auch 0. Somit leakt man später nicht die PFZ
+
+Also das wäre das encoding Schema. Und zwar nimmt man einfach p und q zusammen. Dann leakt man die PFZ nicht
+mehr, weil es dann nur ein einziges Null gibt. Und somit wäre das Schema eigentlich sicher. Weil dann, wenn man
+das inverse mithilfe von Gauss-Elimination bilden will, dann geht das nciht mehr, weil man explizit durch Null
+teilen muss, was nicht geht, aber die PFZ nicht leakt
+
+Das einzige was man vielleicht aufpassen muss ist, dass man nie bewusst eine Nullstelle erzeugt in nur einem
+der beiden Faktoren, aber wieso sollte man das auch. 
+
+Wenn a=0, ist das ein Problem?
+
+ - Nein. Aber die Verschlüsselung erlaubt einen Nulltest (<==> wenn Gauss-Elimination unmöglich), also man kann 
+   durch Durchprobieren von (x - c^2) == 0 den Wert durch Brute-Force herausfinden. 
+
+	 - Es liegt an der Applikation, Massnahmen dagegen zu unternehmen. Die Applikation kann entweder sehr grosse
+	   Werte verwenden, sodass ein Bruteforce unmöglich wird oder sie kann Täuschwerte einfügen, sodass man 
+	   sich nie sicher sein kann, welcher Wert nun der echte ist und welcher der Täuschwert
+
+Ist die Sicherheit gewährleistet? ich denke schon. Aber eben, die Applikation muss auch Massnahmen ergreifen,
+weil man sonst mit der Nulltest-Methode einfach den richtigen Wert herausfinden kann. Also die Applikation 
+rechnet am besten immer mit Zahlen, die mit einer anderen Zahl multipliziert sind, weil bei den meisten Apps
+dürften die Werte in den Registern nicht allzu gross sein
+
+
+Also wie exploitation zeigt, das Schema ist unsicher, und zwar aus folgendem Grund, dass man nach dem bekannten
+PT-CT Paar einfach auflösen kann und somit die z/z' Entschlüsselung bricht und dadurch dann auch die gesamte 
+Verschlüsselung. Die z/z' Verschlüsselung wird auch gebrochen dadurch, dass wenn es eine Nullstelle im PT gibt, 
+dass dann bei der Auflösung des LGS eine Nullstelle auftritt, also eine Komplexe Zahl, wobei die Komplexe Zahl
+einen Betrag von 0 hat. Wenn eine solche bekannt ist, dann kann man das z/z' encoding einfach lösen. 
+
+Leider hilft hiergegen auch eine C2 Verschlüsselung nicht viel, da eine Nullstelle auch das C2 Encoding direkt
+zerstören würde. 
+
+Auch Quaternionen helfen nicht viel weiter, da sie genau unter dem gleichen Problem leiden. Sobald eine
+Nullstelle bekannt ist, kann das z/z' encoding gebrochen werden. 
+
+Ein weiteres Problem welches ich sehe ist, dass man nicht einen Körper haben kann, welcher Addition und
+Multiplikation unterstützt und es schwer ist, das multiplikative Inverse zu finden. Ich habe mir überlegt,
+vielleicht für Polynome, aber das geht auch nicht. Selbst in einem Polynomkörper ist es einfach, das Inverse
+zu berechnen, eben auch mit dem euklidschen Algorithmus
+
+  Wobei vielleicht könnte man die Idee von nicht-PFZ-leakende Komplexe Zahlen auch auf nicht leakende C2 erweitern.
+  Also sodass quasi immer, wenn es kein Inverses Element gibt, dass dann der Betrag der C2 Zahl = (0,0) ist. so würde
+  man auch z/z' nicht leaken und schon gar nicht die PFZ...
+
+  Wenn man es logisch erweitern würde würd edas heissen, dass die Verschlüsselung folgnedermassen aufgebaut ist:
+
+   [r1,r2,m,m] --> C2
+
+  In diesem Falle könnte es sein, dass [r1,r2,0,0] immer den Betrag (0,0) hat. Und es sollte unmöglich sein, dass
+  diese beiden m's einen anderen Wert haben
+
+  angenonmmen x=p+1//2 und y=sqrt(-x^2). Dann wäre die Formel für die C2 Basisvektoren
+
+   (x,0,y,0)  --> (x,y)  --> (xx,xy,xy,yy)
+   			  --> (x,-y) --> (xx,-xy,xy,-yy)
+   (x,0,-y,0) --> (x,y)  --> (xx,xy,-xy,-yy)
+   			  --> (x,-y) --> (xx,-xy,-xy,yy)
+  
+  also dies wären dann die Basisvektoren. Wenn man b[0],b[1] oder b[2],b[3] zusammennimmt, dann erhält man 
+
+    (x,0,y,0) oder (x,0,-y,0)
+
+  Also so würde man dann verschlüsseln. 
+
