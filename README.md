@@ -2,7 +2,7 @@
 
 ## Failed attempts
 
-The versions v1 until v10 include candidate constructions which I have tested over over the course of about 2 years. For all of them I was able to find concrete 
+The versions v1 until v9 include candidate constructions which I have tested over over the course of about 2 years. For all of them I was able to find concrete 
 counterexamples. They all explore different ideas, where complex numbers over a finite field, quaternions over a finite field and more on were used
 in order to achieve a scheme, but like mentionned, they all were proven insecure by a counterexample. 
 
